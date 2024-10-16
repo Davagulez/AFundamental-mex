@@ -17,13 +17,14 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   };
 
   const res = await fetch(`${API_URL}${endpoint}`, mergedOptions);
+  const data = await res.json(); // Parseamos los datos aquí
 
   if (!res.ok) {
     console.error(await res.text());
     throw new Error('An error occurred while fetching the data.');
   }
 
-  return res.json();
+  return data;
 }
 
 export async function searchActivos(query: string) {
@@ -39,4 +40,11 @@ export async function createAnalisis(data: any) {
 
 export async function getAnalisis() {
   return fetchAPI('/api/analisis');
+}
+
+export async function authApi(data: any) {
+  return fetchAPI('/api/auth/local', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }

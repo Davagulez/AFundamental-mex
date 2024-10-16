@@ -1,22 +1,22 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authApi } from '@/lib/api';
 
 interface User {
   id: string;
   username: string;
-  email: string;
+  identifier: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const probandoRepo = "probando subida a github";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -50,20 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (identifier: string, password: string) => {
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      if (response.ok) {
-        const { user, token } = await response.json();
-        localStorage.setItem('token', token);
-        setUser(user);
-      } else {
-        throw new Error('Login failed');
-      }
+      const data = await authApi({ identifier, password });
+      const { user, jwt } = data;
+      localStorage.setItem('token', jwt);
+      setUser(user);
     } catch (error) {
       console.error('Login error:', error);
       throw error;

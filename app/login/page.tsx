@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Loader2 } from 'lucide-react';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -21,10 +21,15 @@ export default function Login() {
     setError('');
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(identifier, password);
       router.push('/dashboard');
     } catch (err) {
-      setError('Error al iniciar sesión');
+      console.error('Login error:', err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Error desconocido al iniciar sesión.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -41,11 +46,11 @@ export default function Login() {
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
                 <Input
-                  id="email"
-                  placeholder="Correo electrónico"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="identifier"
+                  placeholder="Correo o Usuario"
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                 />
               </div>
               <div className="flex flex-col space-y-1.5">
