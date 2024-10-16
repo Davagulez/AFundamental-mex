@@ -16,6 +16,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const probandoRepo = "probando subida a github";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
