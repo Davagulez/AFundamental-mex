@@ -6,6 +6,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus } from 'lucide-react';
 import { useFinancialContext } from '@/context/FinancialContext';
 import { FinancialData } from '@/types/FinancialData';
+import { formatYear } from '@/lib/dateUtils';
+
 
 interface SidebarProps {
   onSelectRecord: (record: FinancialData) => void;
@@ -37,7 +39,7 @@ export function Sidebar({ onSelectRecord, onNewRecord, isExpanded }: SidebarProp
               }}
             >
               <div className="font-bold">{record.activo}</div>
-              <div className="text-sm">{record.inicio} - {record.fin}</div>
+              <div className="text-sm">{formatYear(record.inicio)} - {formatYear(record.fin)}</div>
             </div>
           ))}
         </ScrollArea>

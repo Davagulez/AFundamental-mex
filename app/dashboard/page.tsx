@@ -8,6 +8,7 @@ import { useFinancialContext } from '@/context/FinancialContext';
 import { Sidebar } from '@/components/Sidebar';
 import { TopBar } from '@/components/TopBar';
 import { FinancialData } from '@/types/FinancialData';
+import { formatYear, formatDate } from '@/lib/dateUtils';
 
 export default function Dashboard() {
   const [data, setData] = useState<FinancialData | null>(null);
@@ -38,15 +39,6 @@ export default function Dashboard() {
 
   const toggleSidebar = () => {
     setIsSidebarExpanded(!isSidebarExpanded);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const formatYear = (dateString: string) => {
-    const year = new Date(dateString);
-    return year.getFullYear();
   };
 
   return (

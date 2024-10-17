@@ -49,8 +49,6 @@ export function NewRecordForm({ onSubmit }: NewRecordFormProps) {
         fin: values.fin
       };
 
-      console.log(dataToSend)
-
       const response = await createAnalisis(dataToSend);
 
       // Si la creación es exitosa, puedes llamar a onSubmit con los datos recibidos
