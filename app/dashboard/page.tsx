@@ -44,6 +44,11 @@ export default function Dashboard() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const formatYear = (dateString: string) => {
+    const year = new Date(dateString);
+    return year.getFullYear();
+  };
+
   return (
     <div className="flex h-screen">
       <Sidebar 
@@ -74,18 +79,14 @@ export default function Dashboard() {
                         <TableHead>Inicio</TableHead>
                         <TableHead>Fin</TableHead>
                         <TableHead>Creado</TableHead>
-                        <TableHead>Actualizado</TableHead>
-                        <TableHead>Publicado</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       <TableRow>
                         <TableCell>{data.activo}</TableCell>
-                        <TableCell>{data.inicio}</TableCell>
-                        <TableCell>{data.fin}</TableCell>
+                        <TableCell>{formatYear(data.inicio)}</TableCell>
+                        <TableCell>{formatYear(data.fin)}</TableCell>
                         <TableCell>{formatDate(data.createdAt)}</TableCell>
-                        <TableCell>{formatDate(data.updatedAt)}</TableCell>
-                        <TableCell>{formatDate(data.publishedAt)}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
