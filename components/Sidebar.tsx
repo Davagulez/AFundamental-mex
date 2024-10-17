@@ -5,16 +5,10 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus } from 'lucide-react';
 import { useFinancialContext } from '@/context/FinancialContext';
-
-interface Record {
-  id: number;
-  activo: string;
-  inicio: string;
-  fin: string;
-}
+import { FinancialData } from '@/types/FinancialData';
 
 interface SidebarProps {
-  onSelectRecord: (record: Record) => void;
+  onSelectRecord: (record: FinancialData) => void;
   onNewRecord: () => void;
   isExpanded: boolean;
 }
