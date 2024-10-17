@@ -23,13 +23,10 @@ export default function Login() {
     try {
       await login(identifier, password);
       router.push('/dashboard');
+      setIsLoading(false);
     } catch (err) {
       console.error('Login error:', err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Error desconocido al iniciar sesión.');
-      }
+      setError('Credenciales incorrectas.');
     } finally {
       setIsLoading(false);
     }

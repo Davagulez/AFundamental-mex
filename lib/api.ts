@@ -16,6 +16,15 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
     },
   };
 
+  // Incluir el token de autenticación si está
+  const token = localStorage.getItem('token');
+  if (token) {
+    mergedOptions.headers = {
+      ...mergedOptions.headers,
+      'Authorization': `Bearer ${token}`,
+    };
+  }
+
   const res = await fetch(`${API_URL}${endpoint}`, mergedOptions);
   const data = await res.json(); // Parseamos los datos aquí
 
@@ -34,7 +43,11 @@ export async function searchActivos(query: string) {
 export async function createAnalisis(data: any) {
   return fetchAPI('/api/analisis', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      symbol: data.activo,
+      year1: data.inicio,
+      year2: data.fin
+    }),
   });
 }
 
@@ -45,6 +58,10 @@ export async function getAnalisis() {
 export async function authApi(data: any) {
   return fetchAPI('/api/auth/local', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(data)
   });
+}
+
+export async function validateToken() {
+  return fetchAPI('/api/users/me');
 }

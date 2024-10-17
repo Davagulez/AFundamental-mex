@@ -1,34 +1,10 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { FinancialData } from '@/types/FinancialData';
 
 interface User {
   username: string;
-}
-
-interface FinancialData {
-  id: number;
-  documentId: string;
-  activo: string;
-  inicio: string;
-  fin: string;
-  resultado: {
-    income_status: {
-      [key: string]: number;
-    };
-    margins: {
-      [key: string]: number;
-    };
-    balance_sheet: {
-      [key: string]: number;
-    };
-    financial_ratios: {
-      [key: string]: number;
-    };
-    stock_information: {
-      [key: string]: number;
-    };
-  };
 }
 
 interface FinancialContextType {
@@ -47,15 +23,21 @@ export const FinancialProvider: React.FC<{ children: ReactNode }> = ({ children 
   useEffect(() => {
     const storedData = localStorage.getItem('financialData');
     if (storedData) {
-      setFinancialData(JSON.parse(storedData));
+      try {
+        const parsedData = JSON.parse(storedData);
+        // Si es necesario, valida los datos aquí
+        setFinancialData(parsedData as FinancialData[]);
+      } catch (error) {
+        console.error('Error parsing financial data from localStorage:', error);
+      }
     }
   }, []);
 
-  const addFinancialData = (newData: FinancialData) => {
-    const updatedData = [newData, ...financialData];
-    setFinancialData(updatedData);
-    localStorage.setItem('financialData', JSON.stringify(updatedData));
-  };
+const addFinancialData = (newData: FinancialData) => {
+  const updatedData = [newData, ...financialData];
+  setFinancialData(updatedData);
+  localStorage.setItem('financialData', JSON.stringify(updatedData));
+};
 
   return (
     <FinancialContext.Provider value={{ user, setUser, financialData, addFinancialData }}>

@@ -7,35 +7,7 @@ import { NewRecordForm } from '@/components/NewRecordForm';
 import { useFinancialContext } from '@/context/FinancialContext';
 import { Sidebar } from '@/components/Sidebar';
 import { TopBar } from '@/components/TopBar';
-
-interface FinancialData {
-  id: number;
-  documentId: string;
-  activo: string;
-  inicio: string;
-  fin: string;
-  resultado: {
-    income_status: {
-      [key: string]: string;
-    };
-    margins: {
-      [key: string]: string;
-    };
-    balance_sheet: {
-      [key: string]: string;
-    };
-    financial_ratios: {
-      [key: string]: string;
-    };
-    stock_information: {
-      [key: string]: string;
-    };
-  };
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  locale: string | null;
-}
+import { FinancialData } from '@/types/FinancialData';
 
 export default function Dashboard() {
   const [data, setData] = useState<FinancialData | null>(null);
@@ -109,8 +81,8 @@ export default function Dashboard() {
                     <TableBody>
                       <TableRow>
                         <TableCell>{data.activo}</TableCell>
-                        <TableCell>{formatDate(data.inicio)}</TableCell>
-                        <TableCell>{formatDate(data.fin)}</TableCell>
+                        <TableCell>{data.inicio}</TableCell>
+                        <TableCell>{data.fin}</TableCell>
                         <TableCell>{formatDate(data.createdAt)}</TableCell>
                         <TableCell>{formatDate(data.updatedAt)}</TableCell>
                         <TableCell>{formatDate(data.publishedAt)}</TableCell>
@@ -120,7 +92,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              {Object.entries(data.resultado).map(([section, sectionData]) => (
+              {data && Object.entries(data.resultado).map(([section, sectionData]) => (
                 <Card key={section} className="mb-8">
                   <CardHeader>
                     <CardTitle className="capitalize">{section.replace('_', ' ')}</CardTitle>
@@ -134,7 +106,7 @@ export default function Dashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {Object.entries(sectionData).map(([metric, value]) => (
+                        {Object.entries(sectionData as Record<string, string>).map(([metric, value]) => (
                           <TableRow key={metric}>
                             <TableCell className="font-medium capitalize">{metric.replace(/_/g, ' ')}</TableCell>
                             <TableCell>{value}</TableCell>

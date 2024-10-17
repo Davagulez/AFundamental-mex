@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authApi } from '@/lib/api';
+import { authApi, validateToken } from '@/lib/api';
 
 interface User {
   id: string;
@@ -31,12 +31,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (token) {
         try {
           // Aquí deberías hacer una llamada a tu API para validar el token
-          const response = await fetch('/api/validate-token', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
+          const responseUserData = await validateToken()
+          if (responseUserData) {
+            setUser(responseUserData);
           } else {
             localStorage.removeItem('token');
           }
