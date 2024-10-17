@@ -9,6 +9,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { TopBar } from '@/components/TopBar';
 import { FinancialData } from '@/types/FinancialData';
 import { formatYear, formatDate } from '@/lib/dateUtils';
+import { useSearchParams } from 'next/navigation';
 
 export default function Dashboard() {
   const [data, setData] = useState<FinancialData | null>(null);
@@ -16,11 +17,18 @@ export default function Dashboard() {
   const { financialData, addFinancialData } = useFinancialContext();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
+  const searchParams = useSearchParams();
+  const showFormParam = searchParams.get('showForm');
+
   useEffect(() => {
     if (financialData.length > 0) {
       setData(financialData[0]);
     }
-  }, [financialData]);
+    // Si el parámetro 'showForm' es 'true', mostramos el formulario
+    if (showFormParam === 'true') {
+      setShowNewRecordForm(true);
+    }
+  }, [financialData, showFormParam]);
 
   // Determinar el título de la página basado en el estado actual
   let pageTitle = '';
