@@ -1,5 +1,16 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+export class APIError extends Error {
+  status: number;
+  info: any;
+
+  constructor(message: string, status: number, info: any) {
+    super(message);
+    this.status = status;
+    this.info = info;
+  }
+}
+
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const defaultOptions: RequestInit = {
     headers: {
@@ -26,11 +37,18 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   }
 
   const res = await fetch(`${API_URL}${endpoint}`, mergedOptions);
-  const data = await res.json(); // Parseamos los datos aquí
+  let data;
+
+  try {
+    data = await res.json(); // Leer el cuerpo una vez
+  } catch (error) {
+    // Si la respuesta no tiene un cuerpo JSON válido
+    data = null;
+  }
 
   if (!res.ok) {
-    console.error(await res.text());
-    throw new Error('An error occurred while fetching the data.');
+    const errorMessage = data?.error?.message || data?.message || 'Error al realizar la solicitud';
+    throw new APIError(errorMessage, res.status, data);
   }
 
   return data;

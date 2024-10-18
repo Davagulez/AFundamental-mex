@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authApi, validateToken } from '@/lib/api';
+import { authApi, validateToken, APIError } from '@/lib/api';
 
 interface User {
   id: string;
@@ -51,11 +51,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const data = await authApi({ identifier, password });
       const { user, jwt } = data;
+
+      if (!jwt) {
+        throw new Error('No se recibió el token JWT');
+      }
+
+
       localStorage.setItem('token', jwt);
       setUser(user);
     } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      if (error instanceof APIError) {
+        console.error('Error de API:', error.message);
+        throw new Error(error.message);
+      } else {
+        console.error('Error desconocido:', error);
+        throw new Error('Error desconocido al iniciar sesión');
+      }
     }
   };
 
