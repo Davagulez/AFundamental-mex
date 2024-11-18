@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,6 +61,7 @@ export default function Dashboard() {
         <TopBar 
           isSidebarExpanded={isSidebarExpanded} 
           toggleSidebar={toggleSidebar}
+          onNewRecord={handleShowNewRecordForm} // Asegurarse de pasar esta prop
         />
         <main className="flex-1 overflow-auto p-4 flex justify-center">
           <div className='w-3/5'>
@@ -104,8 +105,8 @@ export default function Dashboard() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                          <TableHead className="w-3/5">Métrica</TableHead>
-                          <TableHead className="w-2/5">Valor</TableHead>
+                            <TableHead className="w-3/5">Métrica</TableHead>
+                            <TableHead className="w-2/5">Valor</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>

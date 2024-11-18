@@ -1,17 +1,18 @@
-"use client"
+"use client";
 
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { Sun, Moon, Menu, Plus, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 interface TopBarProps {
   isSidebarExpanded: boolean;
   toggleSidebar: () => void;
+  onNewRecord: () => void;
 }
 
-export function TopBar({ isSidebarExpanded, toggleSidebar }: TopBarProps) {
+export function TopBar({ isSidebarExpanded, toggleSidebar, onNewRecord }: TopBarProps) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const { logout } = useAuth();
@@ -25,17 +26,35 @@ export function TopBar({ isSidebarExpanded, toggleSidebar }: TopBarProps) {
     router.push('/login');
   };
 
+  // Determinar el estilo de los botones según el tema
+  const buttonVariant = theme === 'dark' ? 'outline' : 'secondary';
+  // const buttonVariant = 'secondary';
+
   return (
-    <div className="flex justify-between items-center p-4 bg-secondary">
-      <Button onClick={toggleSidebar} variant="outline" size="icon">
-        {isSidebarExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-      </Button>
-      <div>
-        <Button onClick={toggleTheme} variant="outline" size="icon" className="mr-2">
-          {theme === 'dark' ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
+    <div className="bg-background border-b p-4 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {/* Renderizar condicionalmente el botón Plus basado en el estado del sidebar */}
+        {!isSidebarExpanded && (
+          <Button variant={buttonVariant} size="icon" onClick={onNewRecord} aria-label="Nuevo Registro">
+            <Plus className="h-5 w-5" />
+          </Button>
+        )}
+        <Button variant={buttonVariant} size="icon" onClick={toggleSidebar} aria-label="Alternar Sidebar">
+          <Menu className="h-5 w-5" />
         </Button>
-        <Button onClick={handleLogout} variant="outline" size="icon">
-          <LogOut className="h-[1.2rem] w-[1.2rem]" />
+        <h1 className="text-xl font-bold ml-4">Dashboard</h1>
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button
+          variant={buttonVariant}
+          size="icon"
+          onClick={toggleTheme}
+          aria-label="Alternar Tema"
+        >
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
+        <Button variant={buttonVariant} size="icon" onClick={handleLogout} aria-label="Cerrar Sesión">
+          <LogOut className="h-5 w-5" />
         </Button>
       </div>
     </div>
