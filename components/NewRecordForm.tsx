@@ -2,26 +2,33 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { createAnalisis } from '@/lib/api';
-import { useState } from 'react';
+import { createAnalisis, searchActivos } from '@/lib/api';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { Loader2 } from 'lucide-react';
+import { formSchema } from '@/validation/newRecordFormSchema';
 
-const formSchema = z.object({
-  activo: z.string().min(1, { message: "Activo es requerido" }),
-  inicio: z
-  .number({ invalid_type_error: "El año de inicio debe ser un número" })
-  .int({ message: "El año de inicio debe ser un número entero" })
-  .gte(1900, { message: "El año de inicio debe ser mayor o igual a 1900" })
-  .lte(new Date().getFullYear(), { message: `El año de inicio no puede ser mayor al año actual (${new Date().getFullYear()})` }),
-  fin: z
-  .number({ invalid_type_error: "El año de fin debe ser un número" })
-  .int({ message: "El año de fin debe ser un número entero" })
-  .gte(1900, { message: "El año de fin debe ser mayor o igual a 1900" })
-  .lte(new Date().getFullYear(), { message: `El año de fin no puede ser mayor al año actual (${new Date().getFullYear()})` }),
-});
+// Función debounce fuera del componente
+function debounce(func: Function, delay: number) {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: any[]) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+}
+
+interface Activo {
+  symbol: string;
+  name: string;
+  exchange: string;
+  type: string;
+}
 
 interface NewRecordFormProps {
   onSubmit: (data: any) => void;
@@ -29,7 +36,13 @@ interface NewRecordFormProps {
 
 export function NewRecordForm({ onSubmit }: NewRecordFormProps) {
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
   const [error, setError] = useState('');
+  const [searchResults, setSearchResults] = useState<Activo[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,10 +63,7 @@ export function NewRecordForm({ onSubmit }: NewRecordFormProps) {
       };
 
       const response = await createAnalisis(dataToSend);
-
-      // Si la creación es exitosa, puedes llamar a onSubmit con los datos recibidos
       onSubmit(response);
-
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -65,31 +75,110 @@ export function NewRecordForm({ onSubmit }: NewRecordFormProps) {
     }
   };
 
+  // Memoizar handleSearch
+  const handleSearch = useCallback(async (query: string) => {
+    if (query.length > 0) {
+      setIsSearching(true);
+      setSearchError('');
+      try {
+        const results = await searchActivos(query);
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Error al buscar activos:', err);
+        setSearchError('Error al buscar activos. Por favor, inténtelo de nuevo.');
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+        setShowResults(true);
+      }
+    } else {
+      setSearchResults([]);
+      setShowResults(false);
+    }
+  }, []);
+
+  // Memoizar debouncedHandleSearch
+  const debouncedHandleSearch = useMemo(() => debounce(handleSearch, 500), [handleSearch]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {/* Campo 'activo' */}
         <FormField
           control={form.control}
           name="activo"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Activo</FormLabel>
-              <FormControl>
-                <Input placeholder="Ingrese el activo" {...field} />
-              </FormControl>
+              <div ref={searchRef} className="relative">
+                <FormControl>
+                  <Input
+                    placeholder="Buscar activo..."
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      debouncedHandleSearch(e.target.value);
+                    }}
+                  />
+                </FormControl>
+                {showResults && (
+                  <div className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 mt-1 rounded-md shadow-lg">
+                    {isSearching ? (
+                      <div className="flex items-center justify-center p-4">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <span>Buscando...</span>
+                      </div>
+                    ) : searchError ? (
+                      <div className="p-4 text-center text-sm text-red-500">
+                        {searchError}
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      <ul className="py-2 max-h-60 overflow-auto">
+                        {searchResults.map((result) => (
+                          <li
+                            key={result.symbol}
+                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                            onClick={() => {
+                              form.setValue('activo', result.symbol);
+                              setShowResults(false);
+                            }}
+                          >
+                            {result.name} ({result.symbol})
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-gray-500">
+                        No se encontraron resultados.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Campo 'inicio' */}
+        {/* Campos 'inicio' y 'fin' */}
         <Controller
           control={form.control}
           name="inicio"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Inicio</FormLabel>
+              <FormLabel>Inicio de Analisis</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -104,7 +193,6 @@ export function NewRecordForm({ onSubmit }: NewRecordFormProps) {
           )}
         />
 
-        {/* Campo 'fin' */}
         <Controller
           control={form.control}
           name="fin"
